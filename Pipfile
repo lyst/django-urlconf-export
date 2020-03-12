@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+pytest = "*"
+mock = "*"
+requests = "*"
+django-urlconf-export = {editable = true,path = "."}
+black = "==19.10b0"
+isort = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]

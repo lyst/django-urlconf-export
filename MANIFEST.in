@@ -1,0 +1,14 @@
+include pyproject.toml
+
+# Include the README
+include *.md
+
+# Include the license file
+include LICENCE
+
+# Include the pipenv files
+include Pipfile
+include Pipfile.lock
+
+# Include the logos
+recursive-include logos *.jpg
