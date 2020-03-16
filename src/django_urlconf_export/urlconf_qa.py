@@ -64,7 +64,7 @@ def assert_url_kwargs_are_the_same_for_all_languages(urlconf=None):
                 en_kwargs = set(en_regex.groupindex.keys())
 
                 # Check each language has the same kwargs
-                for language in settings.LANGUAGES:
+                for language, _ in settings.LANGUAGES:
                     with translation.override(language):
                         language_regex = re.compile(str(pattern_regex))
                         kwargs_for_language = set(language_regex.groupindex.keys())
