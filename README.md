@@ -50,6 +50,7 @@ Some example uses:
   * [Developing](#developing)
   * [Changing test dependencies](#changing-test-dependencies)
   * [Formatting imports and code](#formatting-imports-and-code)
+  * [Publishing to PyPi](#publishing-to-pypi)
 - [Further Development](#further-development)
 
 # User Guide
@@ -498,6 +499,10 @@ Then run:
 * `black src/ tests/` - format code
 
 Then `exit` to quit the shell.
+
+## Publishing to PyPi
+
+Create a new release, and the package will be published automatically by a GitHub action. 
 
 # Further Development
 
