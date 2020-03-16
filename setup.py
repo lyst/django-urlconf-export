@@ -10,7 +10,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="django-urlconf-export",
-    version="1.0.2",
+    version="1.0.3",
     description="Make URLs for your website from anywhere.",
     long_description=long_description,
     long_description_content_type="text/markdown",

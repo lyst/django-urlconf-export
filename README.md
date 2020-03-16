@@ -26,32 +26,32 @@ Some example uses:
 
 ## Table of contents
 
-- [Django URLconf Export](#django-urlconf-export)
-  * [Video: 7 minute overview](#video-7-minute-overview)
-- [User Guide](#user-guide)
-  * [Installation](#installation)
-  * [Export URLconf as JSON](#export-urlconf-as-json)
-  * [Save URLconf to a file](#save-urlconf-to-a-file)
-    + [Example use-case](#example-use-case)
-  * [Serve URLconf from an endpoint](#serve-urlconf-from-an-endpoint)
-    + [Example use-case](#example-use-case-1)
-- [Feature Details](#feature-details)
-  * [Included URLs](#included-urls)
-  * [I18n URLs](#i18n-urls)
-  * [Export whitelist and blacklist](#export-whitelist-and-blacklist)
-  * [Import to a service with its own URLs](#import-to-a-service-with-its-own-urls)
-  * [Export non-default root URLconf](#export-non-default-root-urlconf)
-  * [Making URLs in a non-Django service](#making-urls-in-a-non-django-service)
-  * [Quality assurance for i18n URLs](#quality-assurance-for-i18n-urls)
-    + [Check for translation errors in URL patterns](#check-for-translation-errors-in-url-patterns)
-    + [Ensure URL patterns use kwargs, not args](#ensure-url-patterns-use-kwargs-not-args)
-- [Development Guide](#development-guide)
-  * [Running tests](#running-tests)
-  * [Developing](#developing)
-  * [Changing test dependencies](#changing-test-dependencies)
-  * [Formatting imports and code](#formatting-imports-and-code)
-  * [Publishing to PyPi](#publishing-to-pypi)
-- [Further Development](#further-development)
+- [Django URLconf Export](https://github.com/lyst/django-urlconf-export#django-urlconf-export)
+  * [Video: 7 minute overview](https://github.com/lyst/django-urlconf-export#video-7-minute-overview)
+- [User Guide](https://github.com/lyst/django-urlconf-export#user-guide)
+  * [Installation](https://github.com/lyst/django-urlconf-export#installation)
+  * [Export URLconf as JSON](https://github.com/lyst/django-urlconf-export#export-urlconf-as-json)
+  * [Save URLconf to a file](https://github.com/lyst/django-urlconf-export#save-urlconf-to-a-file)
+    + [Example use-case](https://github.com/lyst/django-urlconf-export#example-use-case)
+  * [Serve URLconf from an endpoint](https://github.com/lyst/django-urlconf-export#serve-urlconf-from-an-endpoint)
+    + [Example use-case](https://github.com/lyst/django-urlconf-export#example-use-case-1)
+- [Feature Details](https://github.com/lyst/django-urlconf-export#feature-details)
+  * [Included URLs](https://github.com/lyst/django-urlconf-export#included-urls)
+  * [I18n URLs](https://github.com/lyst/django-urlconf-export#i18n-urls)
+  * [Export whitelist and blacklist](https://github.com/lyst/django-urlconf-export#export-whitelist-and-blacklist)
+  * [Import to a service with its own URLs](https://github.com/lyst/django-urlconf-export#import-to-a-service-with-its-own-urls)
+  * [Export non-default root URLconf](https://github.com/lyst/django-urlconf-export#export-non-default-root-urlconf)
+  * [Making URLs in a non-Django service](https://github.com/lyst/django-urlconf-export#making-urls-in-a-non-django-service)
+  * [Quality assurance for i18n URLs](https://github.com/lyst/django-urlconf-export#quality-assurance-for-i18n-urls)
+    + [Check for translation errors in URL patterns](https://github.com/lyst/django-urlconf-export#check-for-translation-errors-in-url-patterns)
+    + [Ensure URL patterns use kwargs, not args](https://github.com/lyst/django-urlconf-export#ensure-url-patterns-use-kwargs-not-args)
+- [Development Guide](https://github.com/lyst/django-urlconf-export#development-guide)
+  * [Running tests](https://github.com/lyst/django-urlconf-export#running-tests)
+  * [Developing](https://github.com/lyst/django-urlconf-export#developing)
+  * [Changing test dependencies](https://github.com/lyst/django-urlconf-export#changing-test-dependencies)
+  * [Formatting imports and code](https://github.com/lyst/django-urlconf-export#formatting-imports-and-code)
+  * [Publishing to PyPi](https://github.com/lyst/django-urlconf-export#publishing-to-pypi)
+- [Further Development](https://github.com/lyst/django-urlconf-export#further-development)
 
 # User Guide
 
@@ -172,8 +172,8 @@ So when the URLs change, we don't need to update any service code. This is parti
 
 If you prefer to read code than docs, the tests have examples of all feature details:
 
-* [export_urlconf tests](tests/django_urlconf_export/test_export_urlconf.py)
-* [import_urlconf tests](tests/django_urlconf_export/test_import_urlconf.py)
+* [export_urlconf tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_export_urlconf.py)
+* [import_urlconf tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_import_urlconf.py)
 
 
 ## Included URLs
@@ -308,7 +308,7 @@ If you want to export `admin:some-url` but no other `admin` URLs, set `whitelist
 
 Note: if you set `whitelist = ["admin"]` _no admin URLs will be exported_.
 
-See the [unit tests](tests/django_urlconf_export/test_export_urlconf.py) for more examples.
+See the [unit tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_export_urlconf.py) for more examples.
 
 You can check the whitelist and/or blacklist are working as expected like this:
 
@@ -419,7 +419,7 @@ settings.configure(
 django.setup()
 ```
 
-A similar pattern is used when [running pytests for a Django application](tests/django_urlconf_export/conftest.py).
+A similar pattern is used when [running pytests for a Django application](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/conftest.py).
 
 ## Quality assurance for i18n URLs
 
