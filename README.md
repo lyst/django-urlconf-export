@@ -1,6 +1,6 @@
 # Django URLconf Export
 
-![Django URLconf Export logo](logos/box-logo.jpg)
+![Django URLconf Export logo](https://github.com/lyst/django-urlconf-export/raw/master/logos/box-logo.jpg)
 
 Do you need to make URLs for your Django website in another microservice?
 
@@ -22,7 +22,7 @@ Some example uses:
 
 ## Video: 7 minute overview
 
-[![Link to short overview on YouTube](logos/video-link-720p.jpg)](https://youtu.be/3-9_6My5EWg)
+[![Link to short overview on YouTube](https://github.com/lyst/django-urlconf-export/raw/master/logos/video-link-720p.jpg)](https://youtu.be/3-9_6My5EWg)
 
 ## Table of contents
 
