@@ -1,6 +1,6 @@
 # Django URLconf Export
 
-![Django URLconf Export logo](logos/box-logo.jpg)
+![Django URLconf Export logo](https://github.com/lyst/django-urlconf-export/raw/master/logos/box-logo.jpg)
 
 Do you need to make URLs for your Django website in another microservice?
 
@@ -22,7 +22,7 @@ Some example uses:
 
 ## Video: 7 minute overview
 
-[![Link to short overview on YouTube](logos/video-link-720p.jpg)](https://youtu.be/3-9_6My5EWg)
+[![Link to short overview on YouTube](https://github.com/lyst/django-urlconf-export/raw/master/logos/video-link-720p.jpg)](https://youtu.be/3-9_6My5EWg)
 
 ## Table of contents
 
@@ -50,6 +50,7 @@ Some example uses:
   * [Developing](#developing)
   * [Changing test dependencies](#changing-test-dependencies)
   * [Formatting imports and code](#formatting-imports-and-code)
+  * [Publishing to PyPi](#publishing-to-pypi)
 - [Further Development](#further-development)
 
 # User Guide
@@ -498,6 +499,10 @@ Then run:
 * `black src/ tests/` - format code
 
 Then `exit` to quit the shell.
+
+## Publishing to PyPi
+
+Create a new release, and the package will be published automatically by a GitHub action. 
 
 # Further Development
 
