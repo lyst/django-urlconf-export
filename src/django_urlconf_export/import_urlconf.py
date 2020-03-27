@@ -5,7 +5,7 @@ from pydoc import locate
 
 import requests
 from django.conf import settings
-from django.urls import LocalePrefixPattern, URLPattern, URLResolver
+from django.urls import LocalePrefixPattern, URLPattern, URLResolver, clear_url_caches
 from django.urls.resolvers import RegexPattern, RoutePattern
 from django.utils.functional import lazy
 from django.utils.translation import get_language
@@ -112,9 +112,10 @@ def _get_django_urlpatterns(json_urlpatterns):
     return django_urlpatterns
 
 
-def _add_django_urlpatterns_to_module(django_urlpatterns, urlconf):
+def _update_django_urlpatterns_in_module(django_urlpatterns, urlconf):
     """
-    Add Django URLconf to a module. Create the module if necessary.
+    Update the Django URLconf in a module.
+    Create the module if necessary.
 
     :param django_urlpatterns: list of Django URLResolver and URLPattern objects
     :param urlconf: string - name of module to save the urlpatterns in
@@ -135,19 +136,21 @@ def _add_django_urlpatterns_to_module(django_urlpatterns, urlconf):
         )
 
     if sys.modules.get(urlconf):
+        module_already_existed = True
         # Load existing module
         urlconf_module = sys.modules.get(urlconf)
     else:
+        module_already_existed = False
         # Create module
         urlconf_module = types.ModuleType(urlconf, "Imported URLs will live in this module")
         sys.modules[urlconf] = urlconf_module
 
-    if hasattr(urlconf_module, "urlpatterns"):
-        # Add to existing urlpatterns
-        urlconf_module.urlpatterns += django_urlpatterns
-    else:
-        # Create urlpatterns
-        urlconf_module.urlpatterns = django_urlpatterns
+    # Create or overwrite urlpatterns
+    urlconf_module.urlpatterns = django_urlpatterns
+
+    # If the module already existed, Django might have cached some URLconf from it
+    if module_already_existed:
+        clear_url_caches()
 
 
 def from_json(json_urlpatterns, urlconf=None):
@@ -159,7 +162,7 @@ def from_json(json_urlpatterns, urlconf=None):
     :return: None
     """
     django_urlpatterns = _get_django_urlpatterns(json_urlpatterns)
-    _add_django_urlpatterns_to_module(django_urlpatterns, urlconf)
+    _update_django_urlpatterns_in_module(django_urlpatterns, urlconf)
 
 
 def from_file(file_path, urlconf=None):

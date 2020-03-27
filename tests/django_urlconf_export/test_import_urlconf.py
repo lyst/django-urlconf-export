@@ -173,3 +173,11 @@ def test_import_will_create_urlconf_module(
 def test_import_will_raise_if_no_urlconf_module_specified(cleanup_created_modules):
     with pytest.raises(ValueError):
         import_urlconf.from_json([{"route": "login/", "name": "login"}])
+
+
+def test_import_will_overwrite_existing_urlconf(cleanup_created_modules):
+    import_urlconf.from_json([{"route": "login/", "name": "login"}], urlconf=METHOD_ARGUMENT)
+    assert reverse("login", urlconf=METHOD_ARGUMENT) == "/login/"
+
+    import_urlconf.from_json([{"route": "new-login/", "name": "login"}], urlconf=METHOD_ARGUMENT)
+    assert reverse("login", urlconf=METHOD_ARGUMENT) == "/new-login/"

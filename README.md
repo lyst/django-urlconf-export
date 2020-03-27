@@ -365,7 +365,7 @@ import_urlconf.from_file("urlconf.json", urlconf="imported_urlconf")
 
 If the module does not exist, it will be created - so you can call it anything you like.
 
-If the module exists and has some `urlpatterns` already, the imported URLconf will be appended.
+If the module exists, any existing `urlpatterns` will be overwritten.
 
 Then you can make a url like:
 
