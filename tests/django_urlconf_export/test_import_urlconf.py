@@ -1,5 +1,6 @@
 import sys
 
+import mock
 import pytest
 from django.test import override_settings
 from django.urls import LocalePrefixPattern, reverse
@@ -181,3 +182,78 @@ def test_import_will_overwrite_existing_urlconf(cleanup_created_modules):
 
     import_urlconf.from_json([{"route": "new-login/", "name": "login"}], urlconf=METHOD_ARGUMENT)
     assert reverse("login", urlconf=METHOD_ARGUMENT) == "/new-login/"
+
+
+@mock.patch("django.setup")
+@mock.patch("django.conf.settings")
+def test_init_django_with_default_settings(mock_django_settings, mock_django_setup):
+    mock_django_settings.configured = False
+    mock_django_settings.configure = mock.Mock()
+
+    import_urlconf.init_django()
+
+    mock_django_settings.configure.assert_called_once_with(
+        USE_I18N=True,
+        USE_L10N=True,
+        LANGUAGE_CODE="en-us",
+        SECRET_KEY="not-a-very-secret-key-but-we-need-something-here",
+        ROOT_URLCONF="imported_urlconf",
+    )
+    mock_django_setup.assert_called_once_with()
+
+
+@mock.patch("django.setup")
+@mock.patch("django.conf.settings")
+def test_init_django_with_overridden_settings(mock_django_settings, mock_django_setup):
+    mock_django_settings.configured = False
+    mock_django_settings.configure = mock.Mock()
+
+    import_urlconf.init_django(ROOT_URLCONF="another_urlconf_module", OTHER_SETTING="foo")
+
+    mock_django_settings.configure.assert_called_once_with(
+        USE_I18N=True,
+        USE_L10N=True,
+        LANGUAGE_CODE="en-us",
+        SECRET_KEY="not-a-very-secret-key-but-we-need-something-here",
+        ROOT_URLCONF="another_urlconf_module",
+        OTHER_SETTING="foo",
+    )
+    mock_django_setup.assert_called_once_with()
+
+
+@mock.patch("django.setup")
+@mock.patch("django.conf.settings")
+def test_init_django_when_already_initialized(mock_django_settings, mock_django_setup):
+    mock_django_settings.configured = True
+    mock_django_settings.configure = mock.Mock()
+
+    import_urlconf.init_django()
+
+    assert not mock_django_settings.configure.called
+    assert not mock_django_setup.called
+
+
+@mock.patch("django.setup")
+@mock.patch("django.conf.settings")
+def test_init_django_with_overridden_settings_when_already_initialized(
+    mock_django_settings, mock_django_setup
+):
+    mock_django_settings.configured = True
+    mock_django_settings.configure = mock.Mock()
+
+    # Django has already been initialized with this setting
+    mock_django_settings.SOME_SETTING = "foo"
+
+    # If we initialize again with the same setting, nothing happens
+    import_urlconf.init_django(SOME_SETTING="foo")
+
+    # If we initialize again with the setting as a different value, error.
+    with pytest.raises(ValueError):
+        import_urlconf.init_django(SOME_SETTING="bar")
+
+    # If we initialize again with an additional setting, error.
+    with pytest.raises(ValueError):
+        import_urlconf.init_django(SOME_SETTING="foo", OTHER_SETTING="baz")
+
+    assert not mock_django_settings.configure.called
+    assert not mock_django_setup.called

@@ -411,21 +411,33 @@ urlpatterns = [
 
 You can import and make URLs in any Python code; it doesn't need to be a Django webserver.
 
-You just need to add Django as a dependency, and initialise like this:
+First, add Django as a dependency e.g. `pip install django`
+
+Then call `import_urlconf.init_django()` before you import any URLconf e.g.
 
 ```python
-import django
-from django.conf import settings
+from django_urlconf_export import import_urlconf
 
-settings.configure(
-    SECRET_KEY="aifbc",
-    ROOT_URLCONF="mock_root_urlconf",
-)
+import_urlconf.init_django()
 
-django.setup()
+import_urlconf.from_uri("https://www.example.com/urlconf/")
 ```
 
-A similar pattern is used when [running pytests for a Django application](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/conftest.py).
+Then you can call `reverse()` and make URLs for your website, just like in the website code.
+
+### Edge cases
+
+By default, Django will be initialized with `settings.ROOT_URLCONF == "imported_urlconf"`
+
+The module will be created when you import some urlconf.
+
+If you need to give `settings.ROOT_URLCONF` a different module name, you can:
+
+```python
+import_urlconf.init_django(ROOT_URLCONF="another_urlconf_module")
+```
+
+You can set any other Django settings this way too. See [the source](https://github.com/lyst/django-urlconf-export/blob/master/django_urlconf_export/import_urlconf.py) for the defaults.
 
 ## Quality assurance for i18n URLs
 

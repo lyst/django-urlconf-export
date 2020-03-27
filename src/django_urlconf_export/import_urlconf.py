@@ -3,8 +3,9 @@ import sys
 import types
 from pydoc import locate
 
+import django
 import requests
-from django.conf import settings
+from django import conf as django_conf
 from django.urls import LocalePrefixPattern, URLPattern, URLResolver, clear_url_caches
 from django.urls.resolvers import RegexPattern, RoutePattern
 from django.utils.functional import lazy
@@ -122,9 +123,9 @@ def _update_django_urlpatterns_in_module(django_urlpatterns, urlconf):
     :return: None
     """
     if urlconf is None:
-        urlconf = getattr(settings, "URLCONF_IMPORT_ROOT_URLCONF", None)
+        urlconf = getattr(django_conf.settings, "URLCONF_IMPORT_ROOT_URLCONF", None)
         if urlconf is None:
-            urlconf = getattr(settings, "ROOT_URLCONF", None)
+            urlconf = getattr(django_conf.settings, "ROOT_URLCONF", None)
 
     if not urlconf:
         raise ValueError(
@@ -188,3 +189,51 @@ def from_uri(uri, urlconf=None):
     """
     json_urlpatterns = requests.get(uri).json()
     from_json(json_urlpatterns, urlconf)
+
+
+def init_django(**override_settings):
+    """
+    When importing URLconf in non-Django services,
+    call this helper method to initialize Django.
+
+    :param override_settings: kwargs - non-default Django settings to use
+    :return: None
+    """
+    # If Django was already initialized...
+    if django_conf.settings.configured:
+        # If we don't care about the settings, do nothing.
+        if not override_settings:
+            return
+
+        # We did care about the settings.
+        # Check the settings are what we want.
+        for setting_key, new_setting_value in override_settings.items():
+            current_setting_value = getattr(django_conf.settings, setting_key, None)
+            if current_setting_value is not None:
+                if current_setting_value != new_setting_value:
+                    raise ValueError(
+                        f"Tried to initialize Django multiple times with different settings. "
+                        f"Tried to init with settings.{setting_key} == {repr(new_setting_value)} "
+                        f"but Django was already initialized with "
+                        f"settings.{setting_key} == {repr(current_setting_value)}"
+                    )
+        # Django was already initialized and
+        # had the settings we wanted, so do nothing.
+        return
+
+    # These are the default settings
+    django_settings = dict(
+        USE_I18N=True,
+        USE_L10N=True,
+        LANGUAGE_CODE="en-us",
+        SECRET_KEY="not-a-very-secret-key-but-we-need-something-here",
+        ROOT_URLCONF="imported_urlconf",
+    )
+
+    # Apply any overridden settings
+    if override_settings:
+        django_settings.update(override_settings)
+
+    # Initialize Django
+    django_conf.settings.configure(**django_settings)
+    django.setup()
