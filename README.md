@@ -10,7 +10,7 @@ This was messy and fragile, especially when URLs are translated to multiple lang
 
 But now, Django URLconf Export has solved this problem.
 
-It exports your website URLconf in a JSON format, and imports it in other services.
+It exports your website URLconf in a JSON format, then imports it to any other Python service.
 
 So you can make URLs for your website from anywhere, with no hassle, no repetition and no debt.
 
@@ -287,26 +287,26 @@ Note that `classPath` is saved in the JSON. So if (like Lyst) your project uses 
 By default, all URLs will be exported. But you can set a whitelist and/or blacklist with these Django settings:
 
 ```python
-URLCONF_EXPORT_WHITELIST = ["only-show-this-url"]
-URLCONF_EXPORT_BLACKLIST = ["hide-this-url", "hide-this-one-too"]
+URLCONF_EXPORT_WHITELIST = {"only-show-this-url"}
+URLCONF_EXPORT_BLACKLIST = {"hide-this-url", "hide-this-one-too"}
 ```
 
 The whitelist is applied first, then the blacklist.
 
 List items can be regexes, for example `"secret-."` matches all URL names that start with `secret-` like `secret-page-1`, `secret-page-2` etc.
 
-The lists are a mixture of:
+The whitelist and blacklist sets are a mixture of:
 
 * URL names
 * URL namespaces
 
 For included URLs with a `namespace` (see [Django docs](https://docs.djangoproject.com/en/3.0/topics/http/urls/#url-namespaces)) like the Django admin urls, the `namespace` and the `url_name` must be _both_ be allowed by the lists. 
 
-So you can ban all URLs in the `admin` namespace with `blacklist = ["admin"]`.
+So you can ban all URLs in the `admin` namespace with `blacklist = {"admin"}`.
 
-If you want to export `admin:some-url` but no other `admin` URLs, set `whitelist = ["admin", "some-url"]`. 
+If you want to export `admin:some-url` but no other `admin` URLs, set `whitelist = {"admin", "some-url"}`. 
 
-Note: if you set `whitelist = ["admin"]` _no admin URLs will be exported_.
+Note: if you set `whitelist = {"admin"}` _no admin URLs will be exported_.
 
 See the [unit tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_export_urlconf.py) for more examples.
 
@@ -320,8 +320,8 @@ You can also set whitelist or blacklist explicitly when exporting as JSON:
 
 ```Python
 export_urlconf.as_json(
-    whitelist=["only-show-this-url"],
-    blacklist=["hide-this-url", "hide-this-one-too"]
+    whitelist={"only-show-this-url"},
+    blacklist={"hide-this-url", "hide-this-one-too"}
 )
 ```
 
@@ -339,8 +339,8 @@ Or when serving from an endpoint:
 ```Python
 urlpatterns = [
     url(r"^urlconf/", URLConfExportView.as_view(
-        whitelist=["only-show-this-url"],
-        blacklist=["hide-this-url", "hide-this-one-too"]
+        whitelist={"only-show-this-url"},
+        blacklist={"hide-this-url", "hide-this-one-too"}
     )),
 ]
 ```
