@@ -120,11 +120,16 @@ def _add_django_urlpatterns_to_module(django_urlpatterns, urlconf):
     :param urlconf: string - name of module to save the urlpatterns in
     :return: None
     """
-    urlconf = urlconf or getattr(settings, "ROOT_URLCONF", None)
+    if urlconf is None:
+        urlconf = getattr(settings, "URLCONF_IMPORT_ROOT_URLCONF", None)
+        if urlconf is None:
+            urlconf = getattr(settings, "ROOT_URLCONF", None)
+
     if not urlconf:
         raise ValueError(
-            "Urlconf is not defined. You must set settings.ROOT_URLCONF "
-            "or specify a urlconf module name when importing urls. "
+            "Urlconf is not defined. You must set settings.ROOT_URLCONF, "
+            "or set settings.URLCONF_IMPORT_ROOT_URLCONF, "
+            "or specify a urlconf module name when importing urlconf. "
             "You can use any name you like for the urlconf module, and "
             "it will be created if it doesn't already exist."
         )

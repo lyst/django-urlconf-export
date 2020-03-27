@@ -351,10 +351,16 @@ By default, the library imports URLconf into the root URLconf module of a servic
 
 But you might not want to do this if the service has its own URLs.
 
-You can import to a different module like this:
+You can import URLconf to a different module with this Django setting:
 
 ```python
-import_urlconf.from_file("urlconf.json", urlconf="imported_urls")
+URLCONF_IMPORT_ROOT_URLCONF = "imported_urlconf"
+```
+
+Or you can add a `urlconf="..."` argument when you import:
+
+```python
+import_urlconf.from_file("urlconf.json", urlconf="imported_urlconf")
 ```
 
 If the module does not exist, it will be created - so you can call it anything you like.
@@ -364,7 +370,7 @@ If the module exists and has some `urlpatterns` already, the imported URLconf wi
 Then you can make a url like:
 
 ```python
-reverse("login", urlconf="imported_urls")
+reverse("login", urlconf="imported_urlconf")
 ```
 
 ## Export non-default root URLconf
