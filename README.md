@@ -132,7 +132,7 @@ import_urlconf.from_file("urlconf.json")
 
 ### Example use-case
 
-At Lyst, we have a skeleton repo that we share with external agencies who create special pages for us like [The Year in Fashion](https://www.lyst.com/year-in-fashion-2019/). The repo is a stripped-down simulation of our production environment. Agencies develop pages for our website within the repo, so integration is easy.
+At Lyst, we have a skeleton repo that we share with digital agencies who create special pages for us like [The Year in Fashion](https://www.lyst.com/year-in-fashion-2019/). The repo is a stripped-down simulation of our production environment. Agencies develop pages for our website within the repo, so integration is easy.
 
 We include a URLconf file in the skeleton repo. Before we did this, agencies used to hard-code URLs into their work. But now:
 
@@ -174,9 +174,17 @@ So when the URLs change, we don't need to update any service code. This is parti
 
 ## Exporting from a Django service
 
+In most situations, the best approach is to [serve URLconf from an endpoint](https://github.com/lyst/django-urlconf-export#serve-urlconf-from-an-endpoint).
+
+In some situations, it might work better if you [save URLconf to a file](https://github.com/lyst/django-urlconf-export#save-urlconf-to-a-file).
+
+If you have a specialised use-case that isn't handled by either of these approaches, You could roll your own core logic to [export URLconf as JSON](https://github.com/lyst/django-urlconf-export#export-urlconf-as-json).
+
+If you roll a bespoke integration you think might be useful to others, please feel free to submit a PR.
+
 ## Importing in a non-Django service
 
-You can import and make URLs in any Python code; it doesn't need to be a Django webserver.
+You can import URLconf and make URLs in any Python code.
 
 First, add Django as a dependency e.g. `pip install django`
 
@@ -198,22 +206,24 @@ By default, Django will be initialized with `settings.ROOT_URLCONF == "imported_
 
 The module will be created when you import some urlconf.
 
-If you need to give `settings.ROOT_URLCONF` a different module name, you can:
+If you need to set `settings.ROOT_URLCONF` to different module name, you can:
 
 ```python
 import_urlconf.init_django(ROOT_URLCONF="another_urlconf_module")
 ```
 
-You can set any other Django settings this way too. See [the source](https://github.com/lyst/django-urlconf-export/blob/master/django_urlconf_export/import_urlconf.py) for the defaults.
+You can set any other Django settings this way too. 
+
+See [the source code](https://github.com/lyst/django-urlconf-export/blob/master/src/django_urlconf_export/import_urlconf.py) for the default Django settings.
 
 
 ## Importing in a Django service with own URLs
 
-By default, the library imports URLconf into the root URLconf module of a service - `settings.ROOT_URLCONF`. 
+By default, the library imports URLconf into the root URLconf module of the service - `settings.ROOT_URLCONF`. 
 
-But if a service has its own URLs, you don't want to overwrite them.
+But if the service has its own URLs, you don't want to overwrite them.
 
-You can import URLconf to a different module with this Django setting:
+You can import to a different module with this Django setting:
 
 ```python
 URLCONF_IMPORT_ROOT_URLCONF = "imported_urlconf"
