@@ -35,13 +35,17 @@ Some example uses:
     + [Example use-case](https://github.com/lyst/django-urlconf-export#example-use-case)
   * [Serve URLconf from an endpoint](https://github.com/lyst/django-urlconf-export#serve-urlconf-from-an-endpoint)
     + [Example use-case](https://github.com/lyst/django-urlconf-export#example-use-case-1)
+- [Integration](https://github.com/lyst/django-urlconf-export#integration)
+  * [Exporting from a Django service](https://github.com/lyst/django-urlconf-export#exporting-from-a-django-service)
+  * [Importing in a non-Django service](https://github.com/lyst/django-urlconf-export#importing-in-a-non-django-service)
+    + [Edge cases](https://github.com/lyst/django-urlconf-export#edge-cases)
+  * [Importing in a Django service with own URLs](https://github.com/lyst/django-urlconf-export#importing-in-a-django-service-with-own-urls)
+  * [Importing in a Django service with no URLs](https://github.com/lyst/django-urlconf-export#importing-in-a-django-service-with-no-urls)
 - [Feature Details](https://github.com/lyst/django-urlconf-export#feature-details)
+  * [Export whitelist and blacklist](https://github.com/lyst/django-urlconf-export#export-whitelist-and-blacklist)
   * [Included URLs](https://github.com/lyst/django-urlconf-export#included-urls)
   * [I18n URLs](https://github.com/lyst/django-urlconf-export#i18n-urls)
-  * [Export whitelist and blacklist](https://github.com/lyst/django-urlconf-export#export-whitelist-and-blacklist)
-  * [Import to a service with its own URLs](https://github.com/lyst/django-urlconf-export#import-to-a-service-with-its-own-urls)
   * [Export non-default root URLconf](https://github.com/lyst/django-urlconf-export#export-non-default-root-urlconf)
-  * [Making URLs in a non-Django service](https://github.com/lyst/django-urlconf-export#making-urls-in-a-non-django-service)
   * [Quality assurance for i18n URLs](https://github.com/lyst/django-urlconf-export#quality-assurance-for-i18n-urls)
     + [Check for translation errors in URL patterns](https://github.com/lyst/django-urlconf-export#check-for-translation-errors-in-url-patterns)
     + [Ensure URL patterns use kwargs, not args](https://github.com/lyst/django-urlconf-export#ensure-url-patterns-use-kwargs-not-args)
@@ -166,7 +170,150 @@ These services fetch URLconf from the Lyst website when they boot up, and update
 
 So when the URLs change, we don't need to update any service code. This is particularly helpful when we add a new language for our localised URLs.
 
+# Integration
 
+## Exporting from a Django service
+
+## Importing in a non-Django service
+
+You can import and make URLs in any Python code; it doesn't need to be a Django webserver.
+
+First, add Django as a dependency e.g. `pip install django`
+
+Then call `import_urlconf.init_django()` before you import any URLconf e.g.
+
+```python
+from django_urlconf_export import import_urlconf
+
+import_urlconf.init_django()
+
+import_urlconf.from_uri("https://www.example.com/urlconf/")
+```
+
+Then you can call `reverse()` and make URLs for your website, just like in the website code.
+
+### Edge cases
+
+By default, Django will be initialized with `settings.ROOT_URLCONF == "imported_urlconf"`
+
+The module will be created when you import some urlconf.
+
+If you need to give `settings.ROOT_URLCONF` a different module name, you can:
+
+```python
+import_urlconf.init_django(ROOT_URLCONF="another_urlconf_module")
+```
+
+You can set any other Django settings this way too. See [the source](https://github.com/lyst/django-urlconf-export/blob/master/django_urlconf_export/import_urlconf.py) for the defaults.
+
+
+## Importing in a Django service with own URLs
+
+By default, the library imports URLconf into the root URLconf module of a service - `settings.ROOT_URLCONF`. 
+
+But if a service has its own URLs, you don't want to overwrite them.
+
+You can import URLconf to a different module with this Django setting:
+
+```python
+URLCONF_IMPORT_ROOT_URLCONF = "imported_urlconf"
+```
+
+Or you can add a `urlconf="..."` argument when you import:
+
+```python
+import_urlconf.from_file("urlconf.json", urlconf="imported_urlconf")
+```
+
+If the module does not exist, it will be created - so you can call it anything you like.
+
+If the module exists, any existing `urlpatterns` will be overwritten.
+
+Then you can make a url like:
+
+```python
+reverse("login", urlconf="imported_urlconf")
+```
+
+Or for convenience, you could make a `website_urls.py` module like this:
+
+```python
+from django import urls as django_urls
+from django.apps import AppConfig
+from django_urlconf_export import import_urlconf
+
+
+class WebsiteURLsAppConfig(AppConfig):
+    name = "website_urls"
+    verbose_name = "Make URLs for our website in any Django service."
+
+    def ready(self):
+        """
+        When Django initializes, get the latest urlconf from our website.
+        """
+        update_urlconf()
+
+
+def update_urlconf():
+    """
+    Download the latest urlconf from our website
+    """
+    import_urlconf.from_uri("https://www.example.com/urlconf/", urlconf="imported_urlconf")
+
+
+def reverse(*args, **kwargs):
+    """
+    Thin wrapper for Django's reverse method, to make a URL for our website.
+    """
+    return django_urls.reverse(*args, urlconf="imported_urlconf", **kwargs)
+```
+
+Adding `"website_urls.WebsiteURLsAppConfig"` to `INSTALLED_APPS` in Django setting will import the URLconf when Django starts up.
+
+Then you can make URLs for your website by calling `website_urls.reverse(...)`
+
+If you want to update the URLconf later, you can call `website_urls.update_urlconf()`.
+
+## Importing in a Django service with no URLs
+
+If your Django service doesn't have any URLs of it's own, you can store imported URLconf in the default URLconf module - `settings.ROOT_URLCONF`.
+
+This makes things a bit simpler. You can make a `website_urls.py` module like this:
+
+```python
+from django.apps import AppConfig
+from django_urlconf_export import import_urlconf
+
+
+class WebsiteURLsAppConfig(AppConfig):
+    name = "website_urls"
+    verbose_name = "Make URLs for our website in any Django service."
+
+    def ready(self):
+        """
+        When Django initializes, get the latest urlconf from our website.
+        """
+        update_urlconf()
+
+
+def update_urlconf():
+    """
+    Download the latest urlconf from our website
+    """
+    import_urlconf.from_uri("https://www.example.com/urlconf/")
+```
+
+Adding `"website_urls.WebsiteURLsAppConfig"` to `INSTALLED_APPS` in Django setting will import the URLconf when Django starts up.
+
+Then you can call `reverse()` and make URLs for your website, just like in the website code:
+
+```python
+from django.urls import reverse
+
+reverse(...)
+```
+
+If you want to update the URLconf later, you can call `website_urls.update_urlconf()`.
 
 # Feature Details
 
@@ -175,6 +322,68 @@ If you prefer to read code than docs, the tests have examples of all feature det
 * [export_urlconf tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_export_urlconf.py)
 * [import_urlconf tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_import_urlconf.py)
 
+## Export whitelist and blacklist
+
+By default, all URLs will be exported. But you can set a whitelist and/or blacklist with these Django settings:
+
+```python
+URLCONF_EXPORT_WHITELIST = {"only-show-this-url"}
+URLCONF_EXPORT_BLACKLIST = {"hide-this-url", "hide-this-one-too"}
+```
+
+The whitelist is applied first, then the blacklist.
+
+List items can be regexes, for example `"secret-."` matches all URL names that start with `secret-` like `secret-page-1`, `secret-page-2` etc.
+
+The whitelist and blacklist sets are a mixture of:
+
+* URL names
+* URL namespaces
+
+For included URLs with a `namespace` (see [Django docs](https://docs.djangoproject.com/en/3.0/topics/http/urls/#url-namespaces)) like the Django admin urls, the `namespace` and the `url_name` must be _both_ be allowed by the lists. 
+
+So you can ban all URLs in the `admin` namespace with `blacklist = {"admin"}`.
+
+If you want to export `admin:some-url` but no other `admin` URLs, set `whitelist = {"admin", "some-url"}`. 
+
+Note: if you set `whitelist = {"admin"}` _no admin URLs will be exported_.
+
+See the [unit tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_export_urlconf.py) for more examples.
+
+You can check the whitelist and/or blacklist are working as expected like this:
+
+```python
+print(export_urlconf.get_all_allowed_url_names())
+```
+
+You can also set whitelist or blacklist explicitly when exporting as JSON:
+
+```Python
+export_urlconf.as_json(
+    whitelist={"only-show-this-url"},
+    blacklist={"hide-this-url", "hide-this-one-too"}
+)
+```
+
+Or when generating a file:
+
+```shell
+django-admin export_urlconf_to_file \
+        --whitelist 'only-show-this-url' \
+        --blacklist 'hide-this-url", "hide-this-one-too' \
+        > urlconf.json
+```
+
+Or when serving from an endpoint:
+
+```Python
+urlpatterns = [
+    url(r"^urlconf/", URLConfExportView.as_view(
+        whitelist={"only-show-this-url"},
+        blacklist={"hide-this-url", "hide-this-one-too"}
+    )),
+]
+```
 
 ## Included URLs
 
@@ -281,98 +490,6 @@ You get JSON like:
 
 Note that `classPath` is saved in the JSON. So if (like Lyst) your project uses a subclass of Django's `LocalePrefixPattern` it will work.
 
-
-## Export whitelist and blacklist
-
-By default, all URLs will be exported. But you can set a whitelist and/or blacklist with these Django settings:
-
-```python
-URLCONF_EXPORT_WHITELIST = {"only-show-this-url"}
-URLCONF_EXPORT_BLACKLIST = {"hide-this-url", "hide-this-one-too"}
-```
-
-The whitelist is applied first, then the blacklist.
-
-List items can be regexes, for example `"secret-."` matches all URL names that start with `secret-` like `secret-page-1`, `secret-page-2` etc.
-
-The whitelist and blacklist sets are a mixture of:
-
-* URL names
-* URL namespaces
-
-For included URLs with a `namespace` (see [Django docs](https://docs.djangoproject.com/en/3.0/topics/http/urls/#url-namespaces)) like the Django admin urls, the `namespace` and the `url_name` must be _both_ be allowed by the lists. 
-
-So you can ban all URLs in the `admin` namespace with `blacklist = {"admin"}`.
-
-If you want to export `admin:some-url` but no other `admin` URLs, set `whitelist = {"admin", "some-url"}`. 
-
-Note: if you set `whitelist = {"admin"}` _no admin URLs will be exported_.
-
-See the [unit tests](https://github.com/lyst/django-urlconf-export/blob/master/tests/django_urlconf_export/test_export_urlconf.py) for more examples.
-
-You can check the whitelist and/or blacklist are working as expected like this:
-
-```python
-print(export_urlconf.get_all_allowed_url_names())
-```
-
-You can also set whitelist or blacklist explicitly when exporting as JSON:
-
-```Python
-export_urlconf.as_json(
-    whitelist={"only-show-this-url"},
-    blacklist={"hide-this-url", "hide-this-one-too"}
-)
-```
-
-Or when generating a file:
-
-```shell
-django-admin export_urlconf_to_file \
-        --whitelist 'only-show-this-url' \
-        --blacklist 'hide-this-url", "hide-this-one-too' \
-        > urlconf.json
-```
-
-Or when serving from an endpoint:
-
-```Python
-urlpatterns = [
-    url(r"^urlconf/", URLConfExportView.as_view(
-        whitelist={"only-show-this-url"},
-        blacklist={"hide-this-url", "hide-this-one-too"}
-    )),
-]
-```
-
-## Import to a service with its own URLs
-
-By default, the library imports URLconf into the root URLconf module of a service - `settings.ROOT_URLCONF`. 
-
-But you might not want to do this if the service has its own URLs.
-
-You can import URLconf to a different module with this Django setting:
-
-```python
-URLCONF_IMPORT_ROOT_URLCONF = "imported_urlconf"
-```
-
-Or you can add a `urlconf="..."` argument when you import:
-
-```python
-import_urlconf.from_file("urlconf.json", urlconf="imported_urlconf")
-```
-
-If the module does not exist, it will be created - so you can call it anything you like.
-
-If the module exists, any existing `urlpatterns` will be overwritten.
-
-Then you can make a url like:
-
-```python
-reverse("login", urlconf="imported_urlconf")
-```
-
 ## Export non-default root URLconf
 
 By default, we export the root URLconf module that creates the endpoints of your Django website: `settings.ROOT_URLCONF`. This is almost always what you want.
@@ -406,38 +523,6 @@ urlpatterns = [
     )),
 ]
 ```
-
-## Making URLs in a non-Django service
-
-You can import and make URLs in any Python code; it doesn't need to be a Django webserver.
-
-First, add Django as a dependency e.g. `pip install django`
-
-Then call `import_urlconf.init_django()` before you import any URLconf e.g.
-
-```python
-from django_urlconf_export import import_urlconf
-
-import_urlconf.init_django()
-
-import_urlconf.from_uri("https://www.example.com/urlconf/")
-```
-
-Then you can call `reverse()` and make URLs for your website, just like in the website code.
-
-### Edge cases
-
-By default, Django will be initialized with `settings.ROOT_URLCONF == "imported_urlconf"`
-
-The module will be created when you import some urlconf.
-
-If you need to give `settings.ROOT_URLCONF` a different module name, you can:
-
-```python
-import_urlconf.init_django(ROOT_URLCONF="another_urlconf_module")
-```
-
-You can set any other Django settings this way too. See [the source](https://github.com/lyst/django-urlconf-export/blob/master/django_urlconf_export/import_urlconf.py) for the defaults.
 
 ## Quality assurance for i18n URLs
 
