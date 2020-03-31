@@ -221,9 +221,9 @@ See [the source code](https://github.com/lyst/django-urlconf-export/blob/master/
 
 By default, the library imports URLconf into the root URLconf module of the service - `settings.ROOT_URLCONF`. 
 
-But if the service has its own URLs, you don't want to overwrite them.
+But if the service has its own URLs, `settings.ROOT_URLCONF` will have some URLconf in it already.
 
-You can import to a different module with this Django setting:
+To avoid overwriting the service's URLs, you can import to a different module with this Django setting:
 
 ```python
 URLCONF_IMPORT_ROOT_URLCONF = "imported_urlconf"
@@ -288,7 +288,7 @@ If you want to update the URLconf later, you can call `website_urls.update_urlco
 
 If your Django service doesn't have any URLs of it's own, you can store imported URLconf in the default URLconf module - `settings.ROOT_URLCONF`.
 
-This makes things a bit simpler. You can make a `website_urls.py` module like this:
+This makes things a bit simpler. You could make a `website_urls.py` module like this:
 
 ```python
 from django.apps import AppConfig
